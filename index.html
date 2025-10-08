@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SafeSource - Verify Product Authenticity</title>
+    <title>SafeSource - Supply Chain Platform</title>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#00ff00">
+    <meta name="theme-color" content="#00a8ff">
     <link href="https://fonts.googleapis.com/css2?family=Exo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             background: #000; 
-            color: #00ff00; 
+            color: #00a8ff; 
             font-family: 'Exo', sans-serif; 
             height: 100vh; 
             overflow: hidden;
@@ -24,19 +25,19 @@
             justify-content: center; align-items: center; z-index: 10000;
         }
         .startup-logo {
-            font-size: 4rem; font-weight: 800; text-shadow: 0 0 20px #00ff00;
+            font-size: 4rem; font-weight: 800; text-shadow: 0 0 20px #00a8ff;
             animation: pulse 2s infinite; margin-bottom: 10px;
         }
         .startup-partner {
-            font-size: 1.5rem; font-weight: 600; color: #00a8ff; 
+            font-size: 1.5rem; font-weight: 600; color: #00ff00; 
             margin-bottom: 20px; animation: fadeIn 3s ease-in;
         }
         .loading-bar {
-            width: 250px; height: 6px; background: rgba(0, 255, 0, 0.2);
+            width: 250px; height: 6px; background: rgba(0, 168, 255, 0.2);
             border-radius: 3px; margin-top: 20px; overflow: hidden;
         }
         .loading-progress {
-            height: 100%; background: #00ff00; animation: loading 6s ease-in-out;
+            height: 100%; background: #00a8ff; animation: loading 6s ease-in-out;
         }
 
         /* Main App */
@@ -44,54 +45,75 @@
         .container { padding: 20px; height: 100%; display: flex; flex-direction: column; }
         
         .app-header { text-align: center; margin-bottom: 20px; }
-        .app-title { font-size: 2rem; font-weight: 800; text-shadow: 0 0 10px #00ff00; }
+        .app-title { font-size: 2rem; font-weight: 800; text-shadow: 0 0 10px #00a8ff; }
         .app-subtitle { font-size: 1rem; opacity: 0.8; }
 
-        /* Scanner Interface */
-        .scanner-interface {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 1000; flex-direction: column;
+        /* Role Selector */
+        .role-selector {
+            display: flex; justify-content: space-around; margin-bottom: 20px;
+            background: rgba(0, 168, 255, 0.1); border-radius: 50px; padding: 5px;
         }
-        .scanner-frame {
-            width: 280px; height: 280px; border: 4px solid #00ff00; border-radius: 20px;
-            position: relative; box-shadow: 0 0 40px #00ff00; margin: auto;
+        .role-tab {
+            flex: 1; padding: 12px; text-align: center; cursor: pointer;
+            border-radius: 50px; transition: all 0.3s; font-weight: 600;
         }
-        .scanner-laser {
-            position: absolute; top: 0; left: 10%; width: 80%; height: 4px;
-            background: linear-gradient(90deg, transparent, #00ff00, #ff0080, #00ff00, transparent);
-            animation: scan 1.5s linear infinite;
+        .role-tab.active {
+            background: #00a8ff; color: #000; font-weight: 800;
+            box-shadow: 0 0 15px rgba(0, 168, 255, 0.5);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: rgba(0, 168, 255, 0.1); border-radius: 15px; padding: 20px;
+            text-align: center; border: 2px solid #00a8ff;
+        }
+        .stat-number { font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
+        .stat-label { font-size: 0.9rem; opacity: 0.8; }
+
+        /* Sections */
+        .section {
+            background: rgba(0, 168, 255, 0.1); border-radius: 15px; padding: 20px;
+            margin-bottom: 15px; border: 2px solid #00a8ff;
+        }
+
+        /* SARS Intelligence */
+        .sars-alert {
+            background: rgba(255, 68, 68, 0.1); border-radius: 15px; padding: 15px;
+            margin-bottom: 15px; border: 2px solid #ff4444;
+        }
+        .sars-email-template {
+            background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 10px;
+            margin: 10px 0; border: 1px solid #ff4444;
         }
 
         /* Buttons */
-        .scan-btn {
-            background: linear-gradient(45deg, #00ff00, #00a8ff); color: #000;
-            border: none; padding: 18px 35px; font-family: 'Exo', sans-serif;
-            font-size: 1.2rem; font-weight: 800; border-radius: 50px; cursor: pointer;
-            margin: 15px 0; width: 100%; box-shadow: 0 0 25px rgba(0, 255, 0, 0.4);
+        .btn {
+            background: linear-gradient(45deg, #00a8ff, #00ff00); color: #000;
+            border: none; padding: 10px 15px; border-radius: 10px;
+            font-family: 'Exo', sans-serif; font-weight: 700; cursor: pointer;
+            margin: 5px; transition: all 0.3s; font-size: 0.9rem;
         }
-
-        /* Reporting Section */
-        .report-section {
-            display: none; background: rgba(255, 68, 68, 0.1); border-radius: 15px;
-            padding: 20px; margin-bottom: 15px; border: 2px solid #ff4444;
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 168, 255, 0.4);
         }
-        .form-group { margin-bottom: 15px; }
-        .form-input {
-            width: 100%; padding: 12px; background: rgba(255,255,255,0.1);
-            border: 2px solid #ff4444; border-radius: 8px; color: #fff;
-            font-family: 'Exo', sans-serif;
+        .btn-danger {
+            background: linear-gradient(45deg, #ff4444, #ff0080); color: #fff;
         }
 
         .brand-footer {
             text-align: center; margin-top: auto; padding: 15px 0;
-            font-size: 0.8rem; opacity: 0.7; border-top: 1px solid rgba(0, 255, 0, 0.2);
+            font-size: 0.8rem; opacity: 0.7; border-top: 1px solid rgba(0, 168, 255, 0.2);
         }
 
         @keyframes pulse { 
             0%, 100% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.05); opacity: 0.9; }
         }
-        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
         @keyframes loading { 0% { width: 0%; } 100% { width: 100%; } }
     </style>
 </head>
@@ -103,82 +125,146 @@
         <div class="loading-bar"><div class="loading-progress"></div></div>
     </div>
 
-    <!-- Scanner Interface -->
-    <div class="scanner-interface" id="scannerInterface">
-        <div style="padding: 20px; text-align: center; background: rgba(0, 255, 0, 0.1);">
-            <div style="font-weight: 800; font-size: 1.3rem;">SCAN PRODUCT QR CODE</div>
-        </div>
-        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
-            <div class="scanner-frame">
-                <div class="scanner-laser"></div>
-            </div>
-        </div>
-        <div style="padding: 20px; text-align: center; background: rgba(0, 255, 0, 0.1);">
-            <button class="scan-btn" onclick="captureQRCode()">📷 CAPTURE QR CODE</button>
-            <button class="scan-btn" onclick="closeScanner()" style="background: rgba(255,255,255,0.1); color: #00ff00; border: 2px solid #00ff00;">❌ CANCEL</button>
-        </div>
-    </div>
-
-    <!-- Main App -->
+    <!-- Main Platform -->
     <div class="main-app" id="mainApp">
         <div class="container">
             <div class="app-header">
-                <h1 class="app-title">SAFESOURCE CONSUMER</h1>
-                <p class="app-subtitle">Verify Product Authenticity & Report Counterfeits</p>
+                <h1 class="app-title">SAFESOURCE PLATFORM</h1>
+                <p class="app-subtitle">Supply Chain Intelligence Dashboard | R800M Valuation</p>
             </div>
 
-            <div style="background: rgba(0, 255, 0, 0.1); border-radius: 15px; padding: 25px; text-align: center; margin-bottom: 15px; border: 2px solid #00ff00;">
-                <div style="font-size: 4rem; margin-bottom: 20px;">📱</div>
-                <h2>SCAN PRODUCT QR CODE</h2>
-                <p>Verify authenticity and view supply chain journey</p>
-                <button class="scan-btn" onclick="openScanner()">🔍 LAUNCH SCANNER</button>
-                
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(0, 255, 0, 0.3);">
-                    <p>OR ENTER CODE MANUALLY:</p>
-                    <input type="text" class="form-input" placeholder="ENTER PRODUCT CODE" id="productCode">
-                    <button class="scan-btn" onclick="verifyManualCode()" style="background: rgba(255,255,255,0.1); color: #00ff00; border: 2px solid #00ff00;">✅ VERIFY CODE</button>
+            <!-- Role Selection -->
+            <div class="role-selector">
+                <div class="role-tab active" onclick="switchRole('manufacturer')">🏭 Manufacturer</div>
+                <div class="role-tab" onclick="switchRole('farmer')">🌱 Farmer</div>
+                <div class="role-tab" onclick="switchRole('retailer')">🏪 Retailer</div>
+                <div class="role-tab" onclick="switchRole('compliance')">🚨 Compliance</div>
+            </div>
+
+            <!-- Real-time Stats Dashboard -->
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalProducts">0</div>
+                    <div class="stat-label">Products Tracked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeAlerts">0</div>
+                    <div class="stat-label">Active Alerts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="sarsReports">0</div>
+                    <div class="stat-label">SARS Reports</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="revenuePotential">R0</div>
+                    <div class="stat-label">Revenue Potential</div>
                 </div>
             </div>
 
-            <!-- Results Display -->
-            <div id="resultsSection" style="display: none; background: rgba(0, 255, 0, 0.1); border-radius: 15px; padding: 20px; margin-bottom: 15px; border: 2px solid #00ff00;">
-                <!-- Results will appear here -->
+            <!-- Manufacturer View -->
+            <div id="manufacturerView" class="role-view">
+                <div class="section">
+                    <h3>🏭 MANUFACTURER INTELLIGENCE DASHBOARD</h3>
+                    <p>Production tracking, quality control, and counterfeit intelligence</p>
+                    
+                    <div class="sars-alert">
+                        <h4>🚨 REAL-TIME COUNTERFEIT INTELLIGENCE</h4>
+                        <div id="counterfeitAlerts">
+                            <p style="text-align: center; opacity: 0.7; padding: 20px;">Monitoring consumer reports...</p>
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="generateProductionReport()">📊 Generate Production Report</button>
+                    <button class="btn" onclick="viewQualityMetrics()">✅ Quality Metrics</button>
+                    <button class="btn" onclick="exportManufacturerData()">📤 Export Intelligence</button>
+                </div>
             </div>
 
-            <!-- SARS Reporting Section -->
-            <div class="report-section" id="reportSection">
-                <h3 style="color: #ff4444; text-align: center; margin-bottom: 15px;">🚨 REPORT SUSPICIOUS PRODUCT</h3>
-                <div class="form-group">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #ff4444;">Product Type:</label>
-                    <select class="form-input" id="reportType">
-                        <option value="food">Food & Beverages</option>
-                        <option value="pharma">Pharmaceuticals</option>
-                        <option value="electronics">Electronics</option>
-                        <option value="clothing">Clothing</option>
-                        <option value="other">Other</option>
-                    </select>
+            <!-- Farmer View -->
+            <div id="farmerView" class="role-view" style="display: none;">
+                <div class="section">
+                    <h3>🌱 FARMER SUPPLY CHAIN DASHBOARD</h3>
+                    <p>Harvest tracking, supply chain visibility, and payment analytics</p>
+                    
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="harvestCount">0</div>
+                            <div class="stat-label">Harvests Registered</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="supplyChain">4</div>
+                            <div class="stat-label">Supply Nodes</div>
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="registerHarvest()">📦 Register New Harvest</button>
+                    <button class="btn" onclick="viewSupplyChain()">🛤️ View Supply Chain</button>
+                    <button class="btn" onclick="generateFarmReport()">📈 Farm Analytics</button>
                 </div>
-                <div class="form-group">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #ff4444;">Store/Location:</label>
-                    <input type="text" class="form-input" placeholder="Store name and area" id="reportLocation">
+            </div>
+
+            <!-- Retailer View -->
+            <div id="retailerView" class="role-view" style="display: none;">
+                <div class="section">
+                    <h3>🏪 RETAILER INTELLIGENCE DASHBOARD</h3>
+                    <p>Inventory management, consumer verification analytics, and brand protection</p>
+                    
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="inventoryItems">0</div>
+                            <div class="stat-label">Inventory Items</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="customerScans">0</div>
+                            <div class="stat-label">Customer Scans</div>
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="viewInventory()">📋 Inventory Analytics</button>
+                    <button class="btn" onclick="generateRetailReport()">📈 Sales Report</button>
+                    <button class="btn" onclick="manageBrandProtection()">🛡️ Brand Protection</button>
                 </div>
-                <div class="form-group">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #ff4444;">Product Brand:</label>
-                    <input type="text" class="form-input" placeholder="Brand name" id="reportBrand">
+            </div>
+
+            <!-- Compliance View -->
+            <div id="complianceView" class="role-view" style="display: none;">
+                <div class="section">
+                    <h3>🚨 COMPLIANCE & SARS INTELLIGENCE</h3>
+                    <p>Government reporting, illicit trade monitoring, and compliance analytics</p>
+
+                    <div class="sars-email-template">
+                        <h4>📧 SARS INTELLIGENCE REPORT TEMPLATE</h4>
+                        <div id="sarsEmailPreview">
+                            <p style="text-align: center; opacity: 0.7; padding: 20px;">Loading recent reports...</p>
+                        </div>
+                        <button class="btn btn-danger" onclick="exportSARSData()">📤 Export to SARS</button>
+                        <button class="btn" onclick="generateComplianceReport()">📊 Compliance Report</button>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="highRiskStores">0</div>
+                            <div class="stat-label">High-Risk Stores</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalCounterfeits">0</div>
+                            <div class="stat-label">Counterfeit Reports</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #ff4444;">Additional Details:</label>
-                    <textarea class="form-input" placeholder="Describe the product and situation" id="reportDetails" style="height: 80px;"></textarea>
+            </div>
+
+            <!-- Network Activity -->
+            <div class="section">
+                <h3>📋 REAL-TIME NETWORK ACTIVITY</h3>
+                <div id="networkActivity">
+                    <p style="text-align: center; opacity: 0.7; padding: 20px;">Loading network activity...</p>
                 </div>
-                <button class="scan-btn" onclick="submitReport()" style="background: linear-gradient(45deg, #ff4444, #ff0080); color: #fff;">📧 SUBMIT SARS REPORT</button>
-                <p style="font-size: 0.8rem; text-align: center; margin-top: 10px; opacity: 0.7;">
-                    🔒 Your report is anonymous. Helps manufacturers fight counterfeiting.
-                </p>
             </div>
 
             <div class="brand-footer">
-                SafeSource Consumer App v3.0<br>
-                <small>Powered by SureToGo × MindTech | R800M Valuation</small>
+                SafeSource Platform v3.0 - R800M Valuation Ready<br>
+                <small>Powered by SureToGo × MindTech | Blockchain Verified</small>
             </div>
         </div>
     </div>
@@ -188,125 +274,157 @@
     <script src="/packages/blockchain/blockchain.js"></script>
 
     <script>
-        // Startup Sequence
+        // Platform Initialization
         setTimeout(() => {
             document.getElementById('startupScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
+            initializePlatform();
         }, 6000);
 
-        // Scanner Functions
-        function openScanner() {
-            document.getElementById('scannerInterface').style.display = 'flex';
+        let platformData = {};
+
+        function initializePlatform() {
+            console.log('🏢 SafeSource Platform: INITIALIZED');
+            loadDashboardData();
+            startRealTimeUpdates();
+            
+            // Auto-load intelligence data
+            setTimeout(loadSARSIntelligence, 2000);
         }
 
-        function closeScanner() {
-            document.getElementById('scannerInterface').style.display = 'none';
+        function switchRole(role) {
+            // Update UI
+            document.querySelectorAll('.role-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.role-view').forEach(view => view.style.display = 'none');
+            document.getElementById(role + 'View').style.display = 'block';
+            
+            // Role-specific data loading
+            if (role === 'manufacturer') loadManufacturerData();
+            if (role === 'compliance') loadComplianceData();
+            if (role === 'farmer') loadFarmerData();
+            if (role === 'retailer') loadRetailerData();
         }
 
-        function captureQRCode() {
-            setTimeout(() => {
-                const productCode = 'CONSUMER_PROD_' + Math.random().toString(36).substr(2, 9).toUpperCase();
-                closeScanner();
-                verifyProduct(productCode);
-            }, 1000);
+        function loadDashboardData() {
+            const networkStats = window.safeSourceNetwork.getNetworkStats();
+            const blockchainStats = window.blockchainLedger.getBlockchainStats();
+            
+            // Update dashboard stats
+            document.getElementById('totalProducts').textContent = networkStats.totalVerifications;
+            document.getElementById('activeAlerts').textContent = networkStats.highRiskStores;
+            document.getElementById('sarsReports').textContent = networkStats.totalSARSReports;
+            document.getElementById('revenuePotential').textContent = 'R' + networkStats.revenuePotential.toLocaleString();
+            
+            // Update role-specific stats
+            document.getElementById('highRiskStores').textContent = networkStats.highRiskStores;
+            document.getElementById('totalCounterfeits').textContent = networkStats.totalSARSReports;
+            document.getElementById('harvestCount').textContent = Math.floor(networkStats.totalVerifications / 10);
+            document.getElementById('inventoryItems').textContent = networkStats.totalVerifications;
+            document.getElementById('customerScans').textContent = networkStats.recentActivity;
+            
+            // Update network activity
+            updateNetworkActivity(networkStats);
         }
 
-        function verifyManualCode() {
-            const productCode = document.getElementById('productCode').value;
-            if (productCode) {
-                verifyProduct(productCode);
-            } else {
-                alert('⚠️ Please enter a product code');
-            }
-        }
-
-        // Product Verification
-        function verifyProduct(productCode) {
-            const verification = window.safeSourceNetwork.addVerification({
-                productCode: productCode,
-                productName: 'Sample Product',
-                brand: 'Test Brand'
-            });
-
-            displayResults(verification);
-        }
-
-        function displayResults(verification) {
-            const resultsSection = document.getElementById('resultsSection');
-            const reportSection = document.getElementById('reportSection');
-
-            if (verification.verified) {
-                resultsSection.innerHTML = `
-                    <div style="text-align: center;">
-                        <div style="font-size: 5rem;">✅</div>
-                        <div style="font-size: 1.5rem; font-weight: 800; color: #00ff00; margin: 15px 0;">PRODUCT VERIFIED</div>
-                        <p>This product is authentic and safe to use</p>
-                        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin: 15px 0;">
-                            <strong>${verification.productName}</strong><br>
-                            Code: ${verification.productCode}<br>
-                            Risk Score: <span style="color: #00ff00;">${verification.riskScore}%</span><br>
-                            Location: ${verification.location.store}
-                        </div>
+        function loadSARSIntelligence() {
+            const networkStats = window.safeSourceNetwork.getNetworkStats();
+            const alertsContainer = document.getElementById('counterfeitAlerts');
+            const emailContainer = document.getElementById('sarsEmailPreview');
+            
+            if (networkStats.totalSARSReports > 0) {
+                alertsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 10px;">
+                        <div style="font-size: 2rem;">🚨</div>
+                        <div style="font-weight: 800; color: #ff4444;">${networkStats.totalSARSReports} ACTIVE REPORTS</div>
+                        <p>${networkStats.highRiskStores} high-risk stores identified</p>
+                        <p>Revenue potential: <strong>R${networkStats.revenuePotential}</strong></p>
                     </div>
                 `;
-                reportSection.style.display = 'none';
-            } else {
-                resultsSection.innerHTML = `
-                    <div style="text-align: center;">
-                        <div style="font-size: 5rem;">❌</div>
-                        <div style="font-size: 1.5rem; font-weight: 800; color: #ff4444; margin: 15px 0;">PRODUCT NOT VERIFIED</div>
-                        <p>This product could not be authenticated</p>
-                        <div style="background: rgba(255,68,68,0.1); padding: 15px; border-radius: 10px; margin: 15px 0; border: 1px solid #ff4444;">
-                            <strong>SECURITY WARNING</strong><br>
-                            Product not in SafeSource database<br>
-                            Possible counterfeit detected
-                        </div>
-                    </div>
-                `;
-                reportSection.style.display = 'block';
                 
-                // Auto-populate brand from product code
-                document.getElementById('reportBrand').value = verification.brand || 'Unknown Brand';
+                emailContainer.innerHTML = `
+                    <p><strong>To:</strong> illicittrade@sars.gov.za</p>
+                    <p><strong>Subject:</strong> SafeSource Intelligence Report - ${new Date().toLocaleDateString()}</p>
+                    <p><strong>Body:</strong><br>
+                    Total Reports: ${networkStats.totalSARSReports}<br>
+                    High-Risk Stores: ${networkStats.highRiskStores}<br>
+                    Estimated Value: R${networkStats.revenuePotential}<br>
+                    Period: Last 7 days<br><br>
+                    <em>Generated automatically by SafeSource Global Platform</em>
+                    </p>
+                `;
             }
-
-            resultsSection.style.display = 'block';
-            resultsSection.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // SARS Reporting
-        function submitReport() {
-            const reportType = document.getElementById('reportType').value;
-            const location = document.getElementById('reportLocation').value;
-            const brand = document.getElementById('reportBrand').value;
-            const details = document.getElementById('reportDetails').value;
-
-            if (!location) {
-                alert('⚠️ Please enter the store location');
-                return;
-            }
-
-            const sarsReport = window.safeSourceNetwork.addSARSReport({
-                productType: reportType,
-                store: location,
-                brand: brand,
-                description: details
-            });
-
-            // Also log to blockchain
-            window.blockchainLedger.logSARSReport(sarsReport);
-
-            alert('🚨 SARS Report Submitted!\n\nThank you for helping fight counterfeit products. This intelligence has been logged to our blockchain ledger.');
-
-            document.getElementById('reportSection').style.display = 'none';
-            document.getElementById('reportLocation').value = '';
-            document.getElementById('reportDetails').value = '';
+        function updateNetworkActivity(networkStats) {
+            const container = document.getElementById('networkActivity');
+            const activities = [
+                `${networkStats.recentActivity} verifications in last 24h`,
+                `${networkStats.totalSARSReports} SARS intelligence reports`,
+                `${networkStats.highRiskStores} high-risk stores monitored`,
+                `Blockchain: ${window.blockchainLedger.getBlockchainStats().totalBlocks} blocks`
+            ];
+            
+            container.innerHTML = activities.map(activity => `
+                <div style="padding: 8px; border-bottom: 1px solid rgba(0, 168, 255, 0.2);">
+                    ✅ ${activity}
+                </div>
+            `).join('');
         }
 
-        // Network Stats Display (for demo)
-        setTimeout(() => {
-            const stats = window.safeSourceNetwork.getNetworkStats();
-            console.log('🌐 Network Stats:', stats);
-        }, 7000);
+        function startRealTimeUpdates() {
+            setInterval(loadDashboardData, 10000); // Update every 10 seconds
+        }
+
+        // Manufacturer Functions
+        function generateProductionReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                productsVerified: window.safeSourceNetwork.getNetworkStats().totalVerifications,
+                counterfeitsDetected: window.safeSourceNetwork.getNetworkStats().totalSARSReports,
+                revenueImpact: window.safeSourceNetwork.getNetworkStats().revenuePotential
+            };
+            
+            alert('📊 Production Report Generated!\n\nProducts Verified: ' + report.productsVerified + 
+                  '\nCounterfeits Detected: ' + report.counterfeitsDetected +
+                  '\nRevenue Impact: R' + report.revenueImpact);
+        }
+
+        function exportSARSData() {
+            const networkStats = window.safeSourceNetwork.getNetworkStats();
+            const emailBody = `Total Reports: ${networkStats.totalSARSReports}\nHigh-Risk Stores: ${networkStats.highRiskStores}\nEstimated Value: R${networkStats.revenuePotential}`;
+            
+            alert('📤 SARS Data Ready for Export!\n\nCopy this data to send to SARS:\n\n' + emailBody);
+        }
+
+        // Additional platform functions
+        function loadManufacturerData() {
+            console.log('Loading manufacturer data...');
+        }
+
+        function loadComplianceData() {
+            console.log('Loading compliance data...');
+        }
+
+        function loadFarmerData() {
+            console.log('Loading farmer data...');
+        }
+
+        function loadRetailerData() {
+            console.log('Loading retailer data...');
+        }
+
+        // Placeholder functions for other buttons
+        function viewQualityMetrics() { alert('✅ Quality metrics dashboard loading...'); }
+        function exportManufacturerData() { alert('📤 Exporting manufacturer intelligence data...'); }
+        function registerHarvest() { alert('📦 New harvest registration form loading...'); }
+        function viewSupplyChain() { alert('🛤️ Supply chain visualization loading...'); }
+        function generateFarmReport() { alert('📈 Farm analytics report generating...'); }
+        function viewInventory() { alert('📋 Inventory analytics dashboard loading...'); }
+        function generateRetailReport() { alert('📈 Retail sales report generating...'); }
+        function manageBrandProtection() { alert('🛡️ Brand protection dashboard loading...'); }
+        function generateComplianceReport() { alert('📊 Compliance report generating...'); }
     </script>
 </body>
 </html>
