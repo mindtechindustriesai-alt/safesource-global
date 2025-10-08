@@ -1,23 +1,23 @@
 {
-  "name": "SafeSource - Product Verification",
-  "short_name": "SafeSource",
-  "description": "FREE consumer app to verify product authenticity and report counterfeits - Powered by SureToGo × MindTech",
+  "name": "SafeSource - Supply Chain Platform",
+  "short_name": "SafeSource Platform",
+  "description": "Enterprise supply chain intelligence platform with SARS integration - R800M Valuation",
   "version": "3.0",
-  "start_url": "/consumer/",
+  "start_url": "/platform/",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#00ff00",
+  "theme_color": "#00a8ff",
   "orientation": "portrait",
-  "categories": ["shopping", "lifestyle", "utilities"],
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
-      "src": "/icons/consumer-192.png",
+      "src": "/icons/platform-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/consumer-512.png",
+      "src": "/icons/platform-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -25,35 +25,35 @@
   ],
   "screenshots": [
     {
-      "src": "/screenshots/consumer-scan.png",
+      "src": "/screenshots/platform-dashboard.png",
       "sizes": "375x812",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Scan product QR codes for verification"
+      "label": "Supply chain intelligence dashboard"
     }
   ],
   "shortcuts": [
     {
-      "name": "Scan Product",
-      "short_name": "Scan",
-      "description": "Quickly verify product authenticity",
-      "url": "/consumer/?action=scan",
+      "name": "Manufacturer Dashboard",
+      "short_name": "Manufacturer",
+      "description": "Production and quality control intelligence",
+      "url": "/platform/?role=manufacturer",
       "icons": [
         {
-          "src": "/icons/scan-96.png",
+          "src": "/icons/manufacturer-96.png",
           "sizes": "96x96",
           "type": "image/png"
         }
       ]
     },
     {
-      "name": "Report Counterfeit",
-      "short_name": "Report",
-      "description": "Report suspicious products anonymously",
-      "url": "/consumer/?action=report",
+      "name": "SARS Compliance",
+      "short_name": "Compliance",
+      "description": "Government reporting and illicit trade monitoring",
+      "url": "/platform/?role=compliance",
       "icons": [
         {
-          "src": "/icons/report-96.png",
+          "src": "/icons/compliance-96.png",
           "sizes": "96x96",
           "type": "image/png"
         }
